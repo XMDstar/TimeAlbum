@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <EditText
+        android:id="@+id/et_max"
+        android:layout_width="120dp"
+        android:layout_height="40dp"
+        android:layout_margin="20dp"
+        android:hint="视频+图片 max"
+        android:textSize="13sp" />
+
+    <EditText
+        android:id="@+id/et_video_max"
+        android:layout_width="120dp"
+        android:layout_height="40dp"
+        android:layout_margin="20dp"
+        android:layout_toRightOf="@+id/et_max"
+        android:hint="视频 max"
+        android:textSize="13sp" />
+
+    <Button
+        android:id="@+id/bt_next"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/et_max"
+        android:layout_margin="20dp"
+        android:onClick="toNext"
+        android:text="进入时间相册" />
+
+    <TextView
+        android:id="@+id/tv_show"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/bt_next"
+        android:layout_margin="20dp"
+        android:text="默认选择视频+图片最多9张 视频最多一张  可灵活根据需求去控制 eg:视频和图片不可同时选择 视频max传入0即可"
+        android:textColor="#000"
+        android:textSize="20sp" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/list_show"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/tv_show"
+        android:background="@android:color/white"
+        android:scrollbars="vertical" />
+</RelativeLayout>

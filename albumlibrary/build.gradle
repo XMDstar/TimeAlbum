@@ -1,0 +1,35 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion cfgs.compileSdkVersion
+    defaultConfig {
+        minSdkVersion cfgs.minSdkVersion
+        targetSdkVersion cfgs.targetSdkVersion
+        versionCode cfgs.versionCode
+        versionName cfgs.versionName
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        javaCompileOptions { annotationProcessorOptions { includeCompileClasspath = true } }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "com.android.support:appcompat-v7:${cfgs.androidSupportVersion}"
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    implementation "com.android.support:recyclerview-v7:${cfgs.androidSupportVersion}"
+    //图片加载
+    implementation "com.github.bumptech.glide:glide:${cfgs.glide}"
+    //eventbus
+    implementation "org.greenrobot:eventbus:${cfgs.eventbus}"
+    //ijkplyer
+    implementation "tv.danmaku.ijk.media:ijkplayer-java:${cfgs.ijkplayer}"
+    implementation "tv.danmaku.ijk.media:ijkplayer-armv7a:${cfgs.ijkplayer}"
+}

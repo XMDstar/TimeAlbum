@@ -1,0 +1,16 @@
+ext {
+    cfgs = [
+            compileSdkVersion    : 28,
+            buildToolsVersion    : "27.0.2",
+            minSdkVersion        : 14,
+            targetSdkVersion     : 28,
+            versionCode          : 1,
+            versionName          : "1.0",
+
+            //open version control
+            androidSupportVersion: "28.0.0",
+            glide                : "3.7.0",
+            eventbus             : "3.1.1",
+            ijkplayer            : "0.8.8",
+    ]
+}

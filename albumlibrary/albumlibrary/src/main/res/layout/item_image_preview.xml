@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000">
+
+    <FrameLayout
+        android:id="@+id/preview_fl"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible">
+
+        <com.pili.pldroid.player.widget.PLVideoTextureView
+            android:id="@+id/preview_videoview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
+    </FrameLayout>
+
+
+    <com.gengmei.albumlibrary.album.view.photoview.PhotoView
+        android:id="@+id/preview_img"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center" />
+
+    <ImageView
+        android:id="@+id/iv_play"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_gravity="center"
+        android:src="@mipmap/album_video_play"
+        android:visibility="invisible" />
+
+    <CheckBox
+        android:id="@+id/preview_cb"
+        style="@style/AlbumCustomCheckBoxTheme"
+        android:layout_width="40dp"
+        android:layout_height="45dp"
+        android:layout_gravity="right"
+        android:gravity="center_vertical" />
+</FrameLayout>
