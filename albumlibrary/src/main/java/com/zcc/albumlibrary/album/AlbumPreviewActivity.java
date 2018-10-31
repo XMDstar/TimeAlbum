@@ -1,8 +1,11 @@
 package com.zcc.albumlibrary.album;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.os.Parcelable;
 import android.support.v4.view.ViewPager;
 import android.view.View;
@@ -14,6 +17,7 @@ import com.zcc.albumlibrary.R;
 import com.zcc.albumlibrary.album.adapter.PreviewPGAdapter;
 import com.zcc.albumlibrary.album.bean.MaterialBean;
 import com.zcc.albumlibrary.album.callback.RefreshCallBack;
+import com.zcc.albumlibrary.album.utils.AlbumUtils;
 import com.zcc.albumlibrary.album.view.PreviewViewPager;
 
 import java.util.ArrayList;
@@ -37,6 +41,22 @@ public class AlbumPreviewActivity extends Activity implements View.OnClickListen
     private boolean isRefresh = false;
 
     private PreviewPGAdapter adapter;
+    private ContentResolver resolver;
+    private AlbumUtils albumUtils;
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    Bundle bundle = msg.getData();
+                    materialBeans = (ArrayList<MaterialBean>) bundle.getParcelableArrayList("materialBeans").get(0);
+                    adapter = new PreviewPGAdapter(materialBeans, AlbumPreviewActivity.this, checkId, AlbumPreviewActivity.this, videoCount);
+                    viewPager.setAdapter(adapter);
+                    viewPager.setCurrentItem(position);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,15 +65,34 @@ public class AlbumPreviewActivity extends Activity implements View.OnClickListen
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         setContentView(R.layout.activity_album_preview);
         initView();
+        getData();
+    }
+
+    private void getData() {
+        new Thread() {
+            @Override
+            public void run() {
+                albumUtils = new AlbumUtils(resolver);
+                ArrayList<MaterialBean> beans = albumUtils.getSortData();
+                Message msg = new Message();
+                msg.what = 1;
+                Bundle bundle = new Bundle();
+                ArrayList Alist = new ArrayList();
+                Alist.add(beans);
+                bundle.putParcelableArrayList("materialBeans", Alist);
+                msg.setData(bundle);
+                handler.sendMessage(msg);
+            }
+        }.start();
     }
 
     private void initView() {
         position = getIntent().getIntExtra("position", 0);
-        materialBeans = getIntent().getParcelableArrayListExtra("materialBeans");
         checkList = getIntent().getParcelableArrayListExtra("checkBeans");
         checkId = getIntent().getStringArrayListExtra("checkId");
         videoCount = getIntent().getIntExtra("videocount", 0);
 
+        resolver = getContentResolver();
         viewPager = (PreviewViewPager) findViewById(R.id.vp_preview);
         back = (TextView) findViewById(R.id.tv_back_pre);
         next = (TextView) findViewById(R.id.tv_next_pre);
@@ -72,9 +111,6 @@ public class AlbumPreviewActivity extends Activity implements View.OnClickListen
             public void onPageScrollStateChanged(int state) {
             }
         });
-        adapter = new PreviewPGAdapter(materialBeans, this, checkId, this, videoCount);
-        viewPager.setAdapter(adapter);
-        viewPager.setCurrentItem(position);
         back.setOnClickListener(this);
         next.setOnClickListener(this);
     }

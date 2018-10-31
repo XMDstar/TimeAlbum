@@ -2,10 +2,14 @@ package com.zcc.albumlibrary.album;
 
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
@@ -33,6 +37,10 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,6 +70,7 @@ public class TimeAlbumActivity extends Activity implements View.OnClickListener 
     private List<AlbumData> photoDatas;
     private List<MaterialBean> checkList;
 
+    private MediaScannerConnection msc;
     private int mCurrentPosition = 0;
     private int mSuspensionHeight;
     //是否选中并添加拍照返回图片
@@ -146,8 +155,10 @@ public class TimeAlbumActivity extends Activity implements View.OnClickListener 
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_CODE_TAKE_PHOTO) {
             //拍照返回数据
-            isAdd = true;
-            getData();
+            //拍照返回数据
+            Bundle bundle = data.getExtras();
+            Bitmap bitmap = (Bitmap) bundle.get("data");
+            saveImageToGallery(this, bitmap);
         }
         if (requestCode == REQUEST_CODE_ADD_DATA && resultCode == Activity.RESULT_OK) {
             //预览页返回数据
@@ -203,7 +214,6 @@ public class TimeAlbumActivity extends Activity implements View.OnClickListener 
             if (checkBean != null && checkBean.getType() != 3) {
                 int position = materialBeans.indexOf(checkBean);
                 Intent intent = new Intent(this, AlbumPreviewActivity.class);
-                intent.putParcelableArrayListExtra("materialBeans", materialBeans);
                 intent.putParcelableArrayListExtra("checkBeans", (ArrayList<? extends Parcelable>) checkList);
                 intent.putStringArrayListExtra("checkId", (ArrayList<String>) checkName);
                 intent.putExtra("position", position);
@@ -338,6 +348,49 @@ public class TimeAlbumActivity extends Activity implements View.OnClickListener 
         startActivityForResult(intent, REQUEST_CODE_TAKE_PHOTO);
     }
 
+    private void saveImageToGallery(Context context, Bitmap bmp) {
+        // 首先保存图片
+        final File appDir = new File(Environment.getExternalStorageDirectory(), "gengmei");
+        if (!appDir.exists()) {
+            appDir.mkdir();
+        }
+        String fileName = System.currentTimeMillis() + ".jpg";
+        final File file = new File(appDir, fileName);
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            fos.flush();
+            fos.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+//        // 其次把文件插入到系统图库
+//        try {
+//            MediaStore.Images.Media.insertImage(context.getContentResolver(),
+//                    file.getAbsolutePath(), fileName, null);
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+        // 最后通知图库更新
+        msc = new MediaScannerConnection(this, new MediaScannerConnection.MediaScannerConnectionClient() {
+            @Override
+            public void onMediaScannerConnected() {
+                msc.scanFile(String.valueOf(file), null);
+            }
+
+            @Override
+            public void onScanCompleted(String path, Uri uri) {
+                msc.disconnect();
+                isAdd = true;
+                getData();
+            }
+
+        });
+        msc.connect();
+    }
+
     private void changeStatusBarTextColor(boolean isBlack) {
         //透明状态栏  
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
@@ -367,7 +420,7 @@ public class TimeAlbumActivity extends Activity implements View.OnClickListener 
             }
             final AlbumCommonDialog dialog = new AlbumCommonDialog(this);
             dialog.setTitleVisible(false);
-            dialog.setContent("照片时间和日记贴不是同一天哦，是否按照照片时间拆分成多篇日记？");
+            dialog.setContent("照片时间不是同一天，是否按照照片时间拆分？");
             dialog.setButtonText("不用了", "好的");
             dialog.setOnClickButtonListener(new AlbumCommonDialog.OnClickButtonListener() {
                 @Override

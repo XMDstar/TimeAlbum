@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         Bundle bundle = new Bundle();
         bundle.putInt(AlbumConfig.MAX_NUMBER, TextUtils.isEmpty(etMax.getText().toString()) ? 9 : Integer.parseInt(etMax.getText().toString()));
         bundle.putInt(AlbumConfig.VIDEO_NUMBER, TextUtils.isEmpty(etVideoMax.getText().toString()) ? 1 : Integer.parseInt(etVideoMax.getText().toString()));
-        bundle.putString(AlbumConfig.IS_SPLIT, AlbumConfig.YES_SHOW_DIALOG);
+        bundle.putString(AlbumConfig.IS_SPLIT, AlbumConfig.NO_SHOW_DIALOG);
         startActivityForResult(new Intent(MainActivity.this, TimeAlbumActivity.class).putExtras(bundle), AlbumConfig.ALBUM_REQUESTCODE);
     }
 

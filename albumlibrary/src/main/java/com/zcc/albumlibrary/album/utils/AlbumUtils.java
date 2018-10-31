@@ -93,34 +93,44 @@ public class AlbumUtils {
         ArrayList<MaterialBean> list = new ArrayList<>();
         List<String> photoDates = new ArrayList<>();
         String dateTag = "";
-        for (int i = 0; i < beans.size(); i++) {
-            if (!photoDates.contains(beans.get(i).getFormatDate())) {
-                if (list != null && list.size() > 0) {
+        if (beans.size() == 0) {
+            dateTag = DateUtil.formatDate(System.currentTimeMillis());
+            MaterialBean materialBean = new MaterialBean(null, null, 0, null, null, 3, 0, 0, 0, null);
+            list.add(materialBean);
+            AlbumData data = new AlbumData();
+            data.setDate(dateTag);
+            data.setList(list);
+            datas.add(data);
+        } else {
+            for (int i = 0; i < beans.size(); i++) {
+                if (!photoDates.contains(beans.get(i).getFormatDate())) {
+                    if (list != null && list.size() > 0) {
+                        ArrayList<MaterialBean> mList = new ArrayList<>();
+                        mList.addAll(list);
+                        AlbumData data = new AlbumData();
+                        data.setDate(dateTag);
+                        data.setList(mList);
+                        datas.add(data);
+                        list.clear();
+                    }
+                    photoDates.add(beans.get(i).getFormatDate());
+                    dateTag = beans.get(i).getFormatDate();
+                }
+                if (dateTag.equals(beans.get(i).getFormatDate())) {
+                    if (i == 0 && type.equals(AlbumConfig.ADD_CAMERA)) {
+                        MaterialBean materialBean = new MaterialBean(null, null, 0, null, null, 3, 0, 0, 0, null);
+                        list.add(materialBean);
+                    }
+                    list.add(beans.get(i));
+                }
+                if (i == beans.size() - 1) {
                     ArrayList<MaterialBean> mList = new ArrayList<>();
                     mList.addAll(list);
                     AlbumData data = new AlbumData();
                     data.setDate(dateTag);
                     data.setList(mList);
                     datas.add(data);
-                    list.clear();
                 }
-                photoDates.add(beans.get(i).getFormatDate());
-                dateTag = beans.get(i).getFormatDate();
-            }
-            if (dateTag.equals(beans.get(i).getFormatDate())) {
-                if (i == 0 && type.equals(AlbumConfig.ADD_CAMERA)) {
-                    MaterialBean materialBean = new MaterialBean(null, null, 0, null, null, 3, 0, 0, 0, null);
-                    list.add(materialBean);
-                }
-                list.add(beans.get(i));
-            }
-            if (i == beans.size() - 1) {
-                ArrayList<MaterialBean> mList = new ArrayList<>();
-                mList.addAll(list);
-                AlbumData data = new AlbumData();
-                data.setDate(dateTag);
-                data.setList(mList);
-                datas.add(data);
             }
         }
         return datas;
