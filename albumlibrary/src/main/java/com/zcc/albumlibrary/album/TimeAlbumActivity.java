@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
@@ -79,6 +80,7 @@ public class TimeAlbumActivity extends Activity implements View.OnClickListener 
     private int videoCheckCount = 0;
     //是否显示弹窗
     private String isShowDialog = AlbumConfig.YES_SHOW_DIALOG;
+    private String cameraPath;
 
     private Handler handler = new Handler() {
         @Override
@@ -153,12 +155,8 @@ public class TimeAlbumActivity extends Activity implements View.OnClickListener 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_TAKE_PHOTO) {
-            //拍照返回数据
-            //拍照返回数据
-            Bundle bundle = data.getExtras();
-            Bitmap bitmap = (Bitmap) bundle.get("data");
-            saveImageToGallery(this, bitmap);
+        if (requestCode == REQUEST_CODE_TAKE_PHOTO && resultCode == RESULT_OK) {
+            saveImageToGallery();
         }
         if (requestCode == REQUEST_CODE_ADD_DATA && resultCode == Activity.RESULT_OK) {
             //预览页返回数据
@@ -344,36 +342,41 @@ public class TimeAlbumActivity extends Activity implements View.OnClickListener 
     }
 
     private void takePhoto() {
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(intent, REQUEST_CODE_TAKE_PHOTO);
-    }
-
-    private void saveImageToGallery(Context context, Bitmap bmp) {
         // 首先保存图片
         final File appDir = new File(Environment.getExternalStorageDirectory(), "gengmei");
         if (!appDir.exists()) {
             appDir.mkdir();
         }
         String fileName = System.currentTimeMillis() + ".jpg";
-        final File file = new File(appDir, fileName);
-        try {
-            FileOutputStream fos = new FileOutputStream(file);
-            bmp.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-            fos.flush();
-            fos.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+        File file = new File(appDir, fileName);
+        cameraPath=file.getAbsolutePath();
+        Uri imageUri = parUri(file);
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT,imageUri);
+        startActivityForResult(intent, REQUEST_CODE_TAKE_PHOTO);
+    }
+
+    /**
+     * 生成uri
+     *
+     * @param cameraFile
+     * @return
+     */
+    private Uri parUri(File cameraFile) {
+        Uri imageUri;
+        String authority = getPackageName() + ".provider";
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
+            //通过FileProvider创建一个content类型的Uri
+            imageUri = FileProvider.getUriForFile(this, authority, cameraFile);
+        } else {
+            imageUri = Uri.fromFile(cameraFile);
         }
-//        // 其次把文件插入到系统图库
-//        try {
-//            MediaStore.Images.Media.insertImage(context.getContentResolver(),
-//                    file.getAbsolutePath(), fileName, null);
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        }
-        // 最后通知图库更新
+        return imageUri;
+    }
+
+    private void saveImageToGallery() {
+        // on take photo success
+        final File file = new File(cameraPath);
         msc = new MediaScannerConnection(this, new MediaScannerConnection.MediaScannerConnectionClient() {
             @Override
             public void onMediaScannerConnected() {
